@@ -6,7 +6,7 @@ import os
 import shutil
 import argparse
 import zipfile
-from encoding.utils import download, mkdir
+from encoding_custom.utils.files import download, mkdir
 # -
 
 _TARGET_DIR = os.path.expanduser('../datasets/')

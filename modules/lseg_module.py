@@ -1,24 +1,12 @@
-import re
-import torch
+import os
 import torch.nn as nn
 import torchvision.transforms as transforms
 from argparse import ArgumentParser
 import pytorch_lightning as pl
 from .lsegmentation_module import LSegmentationModule
 from .models.lseg_net import LSegNet
-from encoding.models.sseg.base import up_kwargs
 
-import os
-import clip
-import numpy as np
-
-from scipy import signal
-import glob
-
-from PIL import Image
-import matplotlib.pyplot as plt
-import pandas as pd
-
+up_kwargs = {'mode': 'bilinear', 'align_corners': True}
 
 class LSegModule(LSegmentationModule):
     def __init__(self, data_path, dataset, batch_size, base_lr, max_epochs, **kwargs):
