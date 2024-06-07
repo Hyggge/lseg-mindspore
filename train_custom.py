@@ -13,18 +13,29 @@ import random
 import torch
 import torch.cuda.amp as amp # add mixed precision
 import pytorch_lightning as pl
-
+from datetime import datetime
 from argparse import ArgumentParser
 from data import get_dataset, get_available_datasets
 from encoding_custom.nn.loss import SegmentationLosses
 from encoding_custom.utils.metrics import SegmentationMetric
 from encoding_custom.utils.metrics import batch_pix_accuracy, batch_intersection_union
-
+import os
 
 norm_mean= [0.5, 0.5, 0.5]
 norm_std = [0.5, 0.5, 0.5]
 up_args = {'mode': 'bilinear', 'align_corners': True}
 mixed_precision = False
+log_dir = ""
+
+def create_log_dir():
+    global log_dir
+    current_time = datetime.now()
+    log_dir = current_time.strftime("%Y%m%d_%H%M%S")
+    if not os.path.exists("./log"):
+        os.makedirs("./log")
+    log_dir = os.path.join("./log", log_dir)
+    os.makedirs(log_dir)
+
 
 def get_train_dataloader(dataset_name, data_path, base_size, crop_size, batch_size, augment=False):
     mode =  "train_x" if augment == True else "train"
@@ -160,7 +171,7 @@ def _filter_invalid(self, pred, target):
     return mx[valid], target[valid]
 
 
-def train(model, dataloader, criterion, optimizer, accumulate_grad_batches=1):
+def train(model, dataloader, criterion, optimizer, epoch, accumulate_grad_batches=1):
     # set model to train mode
     model.train()
     
@@ -202,8 +213,8 @@ def train(model, dataloader, criterion, optimizer, accumulate_grad_batches=1):
         train_loss_total += loss.item()
 
         # Show progress while training
-        loop.set_description(f'Batch {i} / {len(dataloader)}')
-        loop.set_postfix(loss=loss.item(), acc="todo")
+        loop.set_description(f'Epoch {epoch + 1}')
+        loop.set_postfix(batch_loss=loss.item(), acc="todo", avg_loss=f"{train_loss_total / sample_num:.4f}")
 
         
     
@@ -248,7 +259,7 @@ def val(model, dataloader, criterion, metric):
             val_loss_total += val_loss.item()
 
             # Show progress while evalating
-            loop.set_description(f'Evalating ...')
+            loop.set_description(f'Evalating')
 
         pixAcc, iou = metric.get()
         val_loss_avg = val_loss_total / sample_num
@@ -261,6 +272,8 @@ def val(model, dataloader, criterion, metric):
         }
 
 if __name__ == "__main__":
+    # create log dir
+    create_log_dir()
     # get the arguments
     args = Options().parser.parse_args()
     # get the device
@@ -334,10 +347,14 @@ if __name__ == "__main__":
 
     # train start
     for epoch in range(args.max_epochs):
-        print(f"Epoch {epoch + 1} start ...")
         # train
-        train_result_epoch = train(model, train_dataloader, criterion, optimizer, args.accumulate_grad_batches)
+        train_result_epoch = train(model, train_dataloader, criterion, optimizer, epoch,  args.accumulate_grad_batches)
         print(f"Train loss: {train_result_epoch['train_loss_avg']:.4f}")
+
+        # save checkpoint
+        ckpt_path = os.path.join(log_dir, f"epoch_{epoch+1}.pth")
+        torch.save(model.state_dict(), ckpt_path)
+
         # validate
         val_result_epoch = val(model, val_dataloader, criterion, metric)
         print(f"Validation loss: {val_result_epoch['val_loss_avg']:.4f}, \
