@@ -39,8 +39,8 @@ def do_training(hparams, model_constructor):
 
     hparams.callbacks = make_checkpoint_callbacks(hparams.exp_name, hparams.version)
 
-    wblogger = get_wandb_logger(hparams)
-    hparams.logger = [wblogger, ttlogger]
+#    wblogger = get_wandb_logger(hparams)
+#    hparams.logger = [wblogger, ttlogger]
 
     trainer = pl.Trainer.from_argparse_args(hparams)
     trainer.fit(model)
