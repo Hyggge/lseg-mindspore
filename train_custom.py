@@ -8,7 +8,7 @@ from modules.lsegmentation_module import LSegmentationModule
 from modules.models.lseg_net import LSegNet
 from data import get_dataset
 import time
-import tqdm
+from tqdm import tqdm
 import random
 import torch
 import torch.cuda.amp as amp # add mixed precision
@@ -167,15 +167,14 @@ def train(model, dataloader, criterion, optimizer, accumulate_grad_batches=1):
     # init
     sample_num = 0
     train_loss_total = 0
-    accumulate_cnt = 0
 
     # start training
     loop = tqdm(enumerate(dataloader), leave=False, total=len(dataloader))
-    for batch in loop:
+    for i, batch in loop:
         # get input data
         img, target = batch
-        img.to(device)
-
+        img = img.to(device)
+        target = target.to(device)
         # forward
         with amp.autocast(enabled=mixed_precision):
             out = model(img)
@@ -185,17 +184,13 @@ def train(model, dataloader, criterion, optimizer, accumulate_grad_batches=1):
             else:
                 loss = criterion(out, target)
             loss = amp.GradScaler(enabled=mixed_precision).scale(loss)
-
+            loss = loss / accumulate_grad_batches
 
         # backward
-        if accumulate_cnt + 1 == accumulate_grad_batches:
-            optimizer.zero_grad()
-            loss.backward()
+        loss.backward()
+        if (i+1) % accumulate_grad_batches == 0:
             optimizer.step()
-            accumulate_cnt = 0
-        else:
-            loss.backward()
-            accumulate_cnt += 1
+            optimizer.zero_grad()
 
         # update metrics
         # final_output = out[0] if multi_loss else out
@@ -206,7 +201,7 @@ def train(model, dataloader, criterion, optimizer, accumulate_grad_batches=1):
         train_loss_total += loss.item()
 
         # Show progress while training
-        loop.set_description(f'Batch {batch} / {len(dataloader)}')
+        loop.set_description(f'Batch {i} / {len(dataloader)}')
         loop.set_postfix(loss=loss.item(), acc="todo")
 
         
@@ -230,11 +225,12 @@ def val(model, dataloader, criterion, metric):
     # start evalation
     with torch.no_grad():
         loop= tqdm(enumerate(dataloader), leave=False, total=len(dataloader))
-        for batch in loop:
+        for i, batch in loop:
             # get input data
             img, target = batch
-            img.to(device)
-           
+            img = img.to(device)
+            target = target.to(device)
+
             # forward
             out = model(img)  
             multi_loss = isinstance(out, tuple)
@@ -325,7 +321,7 @@ if __name__ == "__main__":
     # get the optimizer and scheduler
     optimizer, scheduler = get_optimizer(
         model, 
-        args.base_lr, 
+        args.base_lr / 16 * self.batch_size,
         args.max_epochs, 
         args.midasproto, 
         args.weight_decay
@@ -342,7 +338,7 @@ if __name__ == "__main__":
         train_result_epoch = train(model, train_dataloader, criterion, optimizer, args.accumulate_grad_batches)
         print(f"Train loss: {train_result_epoch['train_loss_avg']}")
         # validate
-        val_result_epoch = eval(model, val_dataloader, criterion, metric)
+        val_result_epoch = val(model, val_dataloader, criterion, metric)
         print(f"Validation loss: {val_result_epoch['val_loss_avg']}, \
               pixAcc: {val_result_epoch['pixAcc']}, \
               iou: {val_result_epoch['iou']}")
