@@ -242,7 +242,7 @@ def val(model, dataloader, criterion, metric):
             
             # update metrics
             final_output = out[0] if multi_loss else out
-            valid_pred, valid_gt = _filter_invalid(final_output, target)
+            # valid_pred, valid_gt = _filter_invalid(final_output, target)
             metric.update(target, final_output)
             sample_num += 1
             val_loss_total += val_loss.item()
@@ -337,11 +337,11 @@ if __name__ == "__main__":
         print(f"Epoch {epoch + 1} start ...")
         # train
         train_result_epoch = train(model, train_dataloader, criterion, optimizer, args.accumulate_grad_batches)
-        print(f"Train loss: {train_result_epoch['train_loss_avg']}")
+        print(f"Train loss: {train_result_epoch['train_loss_avg']:.4f}")
         # validate
         val_result_epoch = val(model, val_dataloader, criterion, metric)
-        print(f"Validation loss: {val_result_epoch['val_loss_avg']}, \
-              pixAcc: {val_result_epoch['pixAcc']}, \
-              iou: {val_result_epoch['iou']}")
+        print(f"Validation loss: {val_result_epoch['val_loss_avg']:.4f}, \
+                pixAcc: {val_result_epoch['pixAcc']:.4f}, \
+                iou: {val_result_epoch['iou']:.4f}")
 
 
