@@ -187,11 +187,12 @@ def train(model, dataloader, criterion, optimizer, accumulate_grad_batches=1):
             loss = loss / accumulate_grad_batches
 
         # backward
-        loss.backward()
         if (i+1) % accumulate_grad_batches == 0:
+            loss.backward(retain_graph=True)
             optimizer.step()
             optimizer.zero_grad()
-
+        else:
+            loss.backward(retain_graph=True)
         # update metrics
         # final_output = out[0] if multi_loss else out
         # train_pred, train_gt = _filter_invalid(final_output, target)
@@ -321,7 +322,7 @@ if __name__ == "__main__":
     # get the optimizer and scheduler
     optimizer, scheduler = get_optimizer(
         model, 
-        args.base_lr / 16 * self.batch_size,
+        args.base_lr / 16 * args.batch_size,
         args.max_epochs, 
         args.midasproto, 
         args.weight_decay
