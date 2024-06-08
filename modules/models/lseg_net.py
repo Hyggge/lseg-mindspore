@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import os
 
+from vit_convert_py2ms.tokenizer import tokenize
+
 class depthwise_clipseg_conv(nn.Module):
     def __init__(self):
         super(depthwise_clipseg_conv, self).__init__()
@@ -155,13 +157,19 @@ class LSeg(BaseModel):
 
         self.scratch.output_conv = head
 
-        self.text = clip.tokenize(self.labels)    
+        # PyTorch API
+        # self.text = clip.tokenize(self.labels)  
+        # MindSpore API  
+        self.text = tokenize(self.labels)     
         
     def forward(self, x, labelset=''):
         if labelset == '':
             text = self.text
         else:
-            text = clip.tokenize(labelset)    
+            # PyTorch API
+            # text = clip.tokenize(labelset) 
+            # MindSpore API   
+            text = tokenize(labelset)       
         
         if self.channels_last == True:
             x.contiguous(memory_format=torch.channels_last)

@@ -1,0 +1,8 @@
+[Start Convert]
+line 51:25: [UnConvert] 'aten::linear' didn't convert.
+line 61:26: [UnConvert] 'aten::linear' didn't convert.
+line 93:25: [UnConvert] 'aten::linear' didn't convert.
+line 96:25: [UnConvert] 'aten::linear' didn't convert.
+line 203:27: [UnConvert] 'aten::linear' didn't convert.
+[Convert Over]
+Converted Rate: 83.33%.

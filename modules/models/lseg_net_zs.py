@@ -12,6 +12,8 @@ import pandas as pd
 
 import os
 
+from vit_convert_py2ms.tokenizer import tokenize
+
 class depthwise_clipseg_conv(nn.Module):
     def __init__(self):
         super(depthwise_clipseg_conv, self).__init__()
@@ -171,7 +173,10 @@ class LSeg(BaseModel):
         label = ['others', '']
         for class_i in range(len(self.label_list)):
             label[1] = self.label_list[class_i]
-            text = clip.tokenize(label)
+            # PyTorch API
+            # text = clip.tokenize(label)
+            # MindSpore API
+            text = tokenize(label)
             self.texts.append(text)
 
     def forward(self, x, class_info):
@@ -294,7 +299,10 @@ class LSegRN(BaseModel):
         label = ['others', '']
         for class_i in range(len(self.label_list)):
             label[1] = self.label_list[class_i]
-            text = clip.tokenize(label)
+            # PyTorch API
+            # text = clip.tokenize(label)
+            # MindSpore API
+            text = tokenize(label)
             self.texts.append(text)
 
     def forward(self, x, class_info):

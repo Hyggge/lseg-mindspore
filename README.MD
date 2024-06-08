@@ -44,6 +44,17 @@ pip install test-tube
 pip install wandb
 ```
 
+Convert PyTorch to MindSpore:
+```
+MindSpore Env:
+  pip install mindspore==2.2.14
+  pip install msadapter==0.1.0
+  pip install mindcv==0.3.0
+CLIP Env (Optional):
+  pip install open_clip_torch (Hugging Face required)
+  pip install mindformers (Ascend-Env required)
+```
+
 ### Data Preparation
 By default, for training, testing and demo, we use [ADE20k](https://groups.csail.mit.edu/vision/datasets/ADE20K/).
 
