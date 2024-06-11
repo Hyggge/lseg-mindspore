@@ -11,7 +11,7 @@
 
 import threading
 import numpy as np
-import torch
+import msadapter.pytorch as torch
 
 __all__ = ['accuracy', 'get_pixacc_miou',
            'SegmentationMetric', 'batch_intersection_union', 'batch_pix_accuracy',
@@ -96,8 +96,8 @@ def batch_pix_accuracy(output, target):
     """
     _, predict = torch.max(output, 1)
 
-    predict = predict.cpu().numpy().astype('int64') + 1
-    target = target.cpu().numpy().astype('int64') + 1
+    predict = predict.numpy().astype('int64') + 1
+    target = target.numpy().astype('int64') + 1
 
     pixel_labeled = np.sum(target > 0)
     pixel_correct = np.sum((predict == target)*(target > 0))
@@ -117,8 +117,8 @@ def batch_intersection_union(output, target, nclass):
     mini = 1
     maxi = nclass
     nbins = nclass
-    predict = predict.cpu().numpy().astype('int64') + 1
-    target = target.cpu().numpy().astype('int64') + 1
+    predict = predict.numpy().astype('int64') + 1
+    target = target.numpy().astype('int64') + 1
 
     predict = predict * (target > 0).astype(predict.dtype)
     intersection = predict * (predict == target)

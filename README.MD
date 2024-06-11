@@ -50,6 +50,7 @@ MindSpore Env:
   pip install mindspore==2.2.14
   pip install msadapter==0.1.0
   pip install mindcv==0.3.0
+  pip install mindconverter==1.7.0
 CLIP Env (Optional):
   pip install open_clip_torch (Hugging Face required)
   pip install mindformers (Ascend-Env required)

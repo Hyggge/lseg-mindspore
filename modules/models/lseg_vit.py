@@ -1,7 +1,7 @@
 import torch as pytorch_torch # Only use PyTorch for generating input for pytorch model
 import msadapter.pytorch as torch
 import msadapter.pytorch.nn as nn
-import timm
+# import timm
 import types
 import math
 import msadapter.pytorch.nn.functional as F
@@ -15,7 +15,6 @@ from mindspore import context
 import traceback
 from vit_convert_py2ms.tokenizer import tokenize
 
-context.set_context(mode=context.PYNATIVE_MODE, device_target="CPU")
 
 activations = {}
 

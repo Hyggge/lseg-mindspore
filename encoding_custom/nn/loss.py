@@ -1,7 +1,7 @@
-import torch
-import torch.nn.functional as F
-import torch.nn as nn
-from torch.autograd import Variable
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn.functional as F
+import msadapter.pytorch.nn as nn
+from msadapter.pytorch.autograd import Variable
 
 __all__ = ['LabelSmoothing', 'NLLMultiLabelSmooth', 'SegmentationLosses']
 

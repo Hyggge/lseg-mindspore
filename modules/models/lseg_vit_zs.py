@@ -1,11 +1,11 @@
-import torch
-import torch.nn as nn
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn as nn
 import timm
 import types
 import math
-import torch.nn.functional as F
+import msadapter.pytorch.nn.functional as F
 import clip
-from torchvision import models
+from msadapter.torchvision import models
 
 activations = {}
 

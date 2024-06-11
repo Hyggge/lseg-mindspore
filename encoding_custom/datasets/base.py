@@ -7,8 +7,8 @@
 import random
 import numpy as np
 from PIL import Image, ImageOps, ImageFilter
-import torch
-import torch.utils.data as data
+import msadapter.pytorch as torch
+import msadapter.pytorch.utils.data as data
 
 __all__ = ['BaseDataset', 'test_batchify_fn']
 

@@ -4,7 +4,7 @@ import errno
 import shutil
 import hashlib
 from tqdm import tqdm
-import torch
+import msadapter.pytorch as torch
 
 __all__ = ['save_checkpoint', 'download', 'mkdir', 'check_sha1']
 

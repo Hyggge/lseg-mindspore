@@ -1,12 +1,13 @@
 import math
 import types
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn as nn
+import msadapter.pytorch.nn.functional as F
+
 
 from .lseg_blocks import FeatureFusionBlock, Interpolate, _make_encoder, FeatureFusionBlock_custom, forward_vit
-import clip
+# import clip
 import numpy as np
 import pandas as pd
 import os
@@ -134,6 +135,7 @@ class LSeg(BaseModel):
             hooks=hooks[backbone],
             use_readout=readout,
         )
+        
 
         self.scratch.refinenet1 = _make_fusion_block(features, use_bn)
         self.scratch.refinenet2 = _make_fusion_block(features, use_bn)
@@ -160,7 +162,7 @@ class LSeg(BaseModel):
         # PyTorch API
         # self.text = clip.tokenize(self.labels)  
         # MindSpore API  
-        self.text = tokenize(self.labels)     
+        self.text = tokenize(self.labels)    
         
     def forward(self, x, labelset=''):
         if labelset == '':
@@ -169,7 +171,7 @@ class LSeg(BaseModel):
             # PyTorch API
             # text = clip.tokenize(labelset) 
             # MindSpore API   
-            text = tokenize(labelset)       
+            text = tokenize(labelset)    
         
         if self.channels_last == True:
             x.contiguous(memory_format=torch.channels_last)

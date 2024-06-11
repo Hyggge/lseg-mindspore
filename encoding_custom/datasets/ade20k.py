@@ -11,9 +11,9 @@ import random
 import math
 from PIL import Image, ImageOps, ImageFilter
 
-import torch
-import torch.utils.data as data
-import torchvision.transforms as transform
+import msadapter.pytorch as torch
+import msadapter.pytorch.utils.data as data
+import msadapter.torchvision.transforms as transform
 
 from .base import BaseDataset
 

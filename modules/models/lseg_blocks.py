@@ -1,5 +1,9 @@
-import torch
-import torch.nn as nn
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn as nn
+from msadapter.pytorch.nn.modules.module import Module
+from msadapter.pytorch.nn.modules.linear import Identity
+import msadapter.pytorch.functional as torch_func
+import msadapter.pytorch.nn.functional as torch_nn_func
 
 from .lseg_vit import (
     _make_pretrained_clip_vitl16_384,
@@ -259,8 +263,8 @@ class ResidualConvUnit_custom(nn.Module):
             self.bn2 = nn.BatchNorm2d(features)
 
         self.activation = activation
-
-        self.skip_add = nn.quantized.FloatFunctional()
+        
+        self.skip_add = FloatFunctional()
 
     def forward(self, x):
         """Forward pass.
@@ -332,7 +336,7 @@ class FeatureFusionBlock_custom(nn.Module):
         self.resConfUnit1 = ResidualConvUnit_custom(features, activation, bn)
         self.resConfUnit2 = ResidualConvUnit_custom(features, activation, bn)
 
-        self.skip_add = nn.quantized.FloatFunctional()
+        self.skip_add = FloatFunctional()
 
     def forward(self, *xs):
         """Forward pass.
@@ -357,3 +361,44 @@ class FeatureFusionBlock_custom(nn.Module):
 
         return output
 
+class FloatFunctional(Module):
+    def __init__(self):
+        super(FloatFunctional, self).__init__()
+        self.activation_post_process = Identity()
+
+    def forward(self, x):
+        raise RuntimeError("FloatFunctional is not intended to use the " +
+                           "'forward'. Please use the underlying operation")
+
+    def add(self, x, y):
+        r = torch_func.add(x, y)
+        r = self.activation_post_process(r)
+        return r
+
+    def add_scalar(self, x, y):
+        r = torch_func.add(x, y)
+        # Note: this operation is not observed because the observation is not
+        # needed for the quantized op.
+        return r
+
+    def mul(self, x, y):
+        r = torch_func.mul(x, y)
+        r = self.activation_post_process(r)
+        return r
+
+    def mul_scalar(self, x, y):
+        r = torch_func.mul(x, y)
+        # Note: this operation is not observed because the observation is not
+        # needed for the quantized op.
+        return r
+
+    def cat(self, x, dim=0):
+        r = torch_func.cat(x, dim=dim)
+        r = self.activation_post_process(r)
+        return r
+
+    def add_relu(self, x, y):
+        r = torch_func.add(x, y)
+        r = torch_nn_func.relu(r)
+        r = self.activation_post_process(r)
+        return r
