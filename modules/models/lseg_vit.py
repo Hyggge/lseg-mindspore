@@ -11,7 +11,7 @@ from mindspore import Tensor as msTensor
 from mindspore import float16 as msFloat16
 from collections import OrderedDict # Only use for CLIP Transformer Initialization
 import mindcv
-from mindspore import context
+from mindspore import context, ops
 import traceback
 from vit_convert_py2ms.tokenizer import tokenize
 
@@ -183,23 +183,27 @@ def forward_flex(self, x):
     B = x.shape[0]
 
     if hasattr(self.patch_embed, "backbone"):
+        print("Use backbone")
         x = self.patch_embed.backbone(x)
         if isinstance(x, (list, tuple)):
             x = x[-1]  # last feature if backbone outputs list/tuple of features
-    x = self.patch_embed.proj(x).flatten(2).transpose(1, 2)
-
+    # print(self.patch_embed.proj(x).flatten(start_dim=2).shape)
+    x = self.patch_embed.proj(x).flatten(start_dim=2)
+    x = ops.squeeze(x, axis=0)
+    x = x.transpose(1, 2)
+    print(x.shape) # TODO: Fix transpose API
     if getattr(self, "dist_token", None) is not None:
-        cls_tokens = self.cls_token.expand(
-            B, -1, -1
+        cls_tokens = self.cls_token.broadcast_to(
+            (B, -1, -1)
         )  # stole cls_tokens impl from Phil Wang, thanks
-        dist_token = self.dist_token.expand(B, -1, -1)
+        dist_token = self.dist_token.broadcast_to((B, -1, -1))
         x = torch.cat((cls_tokens, dist_token, x), dim=1)
     else:
-        cls_tokens = self.cls_token.expand(
-            B, -1, -1
+        cls_tokens = self.cls_token.broadcast_to(
+            (B, -1, -1)
         )  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_tokens, x), dim=1)
-
+    print(x.shape)
     x = x + pos_embed
     x = self.pos_drop(x)
 
@@ -303,7 +307,7 @@ class MS_CLIP_TextEncoder(nn.Module):
         # self.ln_final = torch_clip.ln_final
         # self.text_projection = torch_clip.text_projection
         self.dtype = msFloat16
-        print(f"dtype is {self.dtype}")
+        # print(f"dtype is {self.dtype}")
         # Initialize parameters-weight from torch-clip
         self.token_embedding.weight = self.weight_convert(torch_clip.token_embedding.weight)
         self.positional_embedding = msTensor(self.weight_convert(torch_clip.positional_embedding), msFloat16)

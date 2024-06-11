@@ -4,7 +4,7 @@ import logging
 import os
 
 from tensorboardX import SummaryWriter
-import torch
+import msadapter.pytorch as torch
 
 
 class AverageMeter:

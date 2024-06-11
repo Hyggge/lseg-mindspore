@@ -3,8 +3,8 @@ import os
 import pickle
 
 from torch.utils.data import Dataset
-import torch.nn.functional as F
-import torch
+import msadapter.pytorch as torch.nn.functional as F
+import msadapter.pytorch as torch
 import PIL.Image as Image
 import numpy as np
 

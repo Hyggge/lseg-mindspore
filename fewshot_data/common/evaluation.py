@@ -1,5 +1,5 @@
 r""" Evaluate mask prediction """
-import torch
+import msadapter.pytorch as torch
 
 
 class Evaluator:

@@ -1,9 +1,9 @@
 r""" Hypercorrelation Squeeze testing code """
 import argparse
 
-import torch.nn.functional as F
-import torch.nn as nn
-import torch
+import msadapter.pytorch as torch.nn.functional as F
+import msadapter.pytorch.nn as nn
+import msadapter.pytorch as torch
 
 from fewshot_data.model.hsnet import HypercorrSqueezeNetwork
 from fewshot_data.common.logger import Logger, AverageMeter

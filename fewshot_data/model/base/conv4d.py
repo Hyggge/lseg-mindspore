@@ -1,7 +1,7 @@
 r""" Implementation of center-pivot 4D convolution """
 
-import torch
-import torch.nn as nn
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn as nn
 
 
 class CenterPivotConv4d(nn.Module):

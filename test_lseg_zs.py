@@ -2,9 +2,9 @@ import os
 import argparse
 import numpy as np
 from tqdm import tqdm
-import torch
-import torch.nn.functional as F
-import torch.nn as nn
+import msadapter.pytorch as torch
+import msadapter.pytorch as torch.nn.functional as F
+import msadapter.pytorch.nn as nn
 from modules.lseg_module_zs import LSegModuleZS
 from additional_utils.models import LSeg_MultiEvalModule
 from fewshot_data.common.logger import Logger, AverageMeter

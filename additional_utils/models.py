@@ -4,13 +4,13 @@
 import math
 import numpy as np
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn as nn
+import msadapter.pytorch as torch.nn.functional as F
 from torch.nn.parallel.data_parallel import DataParallel
 from torch.nn.parallel.scatter_gather import scatter
 import threading
-import torch
+import msadapter.pytorch as torch
 from torch.cuda._utils import _get_device_index
 from torch.cuda.amp import autocast
 from torch._utils import ExceptionWrapper

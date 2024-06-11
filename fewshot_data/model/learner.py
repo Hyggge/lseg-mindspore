@@ -1,6 +1,6 @@
 
-import torch.nn as nn
-import torch.nn.functional as F
+import msadapter.pytorch.nn as nn
+import msadapter.pytorch as torch.nn.functional as F
 
 from fewshot_data.model.base.conv4d import CenterPivotConv4d as Conv4d
 

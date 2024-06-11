@@ -3,11 +3,11 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 from collections import OrderedDict
-import torch
-import torch.nn.functional as F
+import msadapter.pytorch as torch
+import msadapter.pytorch as torch.nn.functional as F
 from torch.utils import data
-import torchvision.transforms as transform
-from torch.nn.parallel.scatter_gather import gather
+import msadapter.pytorch as torchvision.transforms as transform
+# from torch.nn.parallel.scatter_gather import gather
 import encoding.utils as utils
 from encoding.nn import SegmentationLosses, SyncBatchNorm
 from encoding.parallel import DataParallelModel, DataParallelCriterion
@@ -19,7 +19,7 @@ import cv2
 import math
 import types
 import functools
-import torchvision.transforms as torch_transforms
+import msadapter.pytorch as torchvision.transforms as torch_transforms
 import copy
 import itertools
 from PIL import Image
@@ -32,7 +32,7 @@ import matplotlib.patches as mpatches
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from data import get_dataset
 from additional_utils.encoding_models import MultiEvalModule as LSeg_MultiEvalModule
-import torchvision.transforms as transforms
+import msadapter.torchvision.transforms as transforms
 
 class Options:
     def __init__(self):

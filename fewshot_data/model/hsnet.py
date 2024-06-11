@@ -2,11 +2,11 @@ r""" Hypercorrelation Squeeze Network """
 from functools import reduce
 from operator import add
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision.models import resnet
-from torchvision.models import vgg
+import msadapter.pytorch as torch
+import msadapter.pytorch.nn as nn
+import msadapter.pytorch as torch.nn.functional as F
+from msadapter.torchvision.models import resnet
+from msadapter.torchvision.models import vgg
 
 from fewshot_data.model.base.feature import extract_feat_vgg, extract_feat_res
 from fewshot_data.model.base.correlation import Correlation

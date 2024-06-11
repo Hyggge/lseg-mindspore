@@ -1,11 +1,4 @@
-import copy
 
-import itertools
-import functools
-import numpy as np
-import torch
-import torch.utils.data
-import torchvision.transforms as torch_transforms
 from encoding_custom.datasets.ade20k import ADE20KSegmentation 
 
 encoding_datasets = {

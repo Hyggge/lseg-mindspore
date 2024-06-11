@@ -157,6 +157,7 @@ def get_optimizer(model, base_lr, step_per_epoch, max_epochs, midasproto, weight
             momentum=0.9,
             weight_decay=weight_decay,
         )
+    return opt
 
 def _filter_invalid(self, pred, target):
     valid = target != self.other_kwargs["ignore_index"]
@@ -178,7 +179,7 @@ def train(model, dataloader, criterion, optimizer, epoch, accumulate_grad_batche
         # get input data
         img, target = batch
         target = Tensor(target, ms.int32)
-
+        print(img.shape)
         # forward
         loss = train_step(img, target)
         loss = loss / accumulate_grad_batches

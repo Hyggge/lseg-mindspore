@@ -1,9 +1,9 @@
 r""" Hypercorrelation Squeeze training (validation) code """
 import argparse
 
-import torch.optim as optim
-import torch.nn as nn
-import torch
+import msadapter.pytorch as torch.optim as optim
+import msadapter.pytorch.nn as nn
+import msadapter.pytorch as torch
 
 from fewshot_data.model.hsnet import HypercorrSqueezeNetwork
 from fewshot_data.common.logger import Logger, AverageMeter

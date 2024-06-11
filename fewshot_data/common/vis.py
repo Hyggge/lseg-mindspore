@@ -3,7 +3,7 @@ import os
 
 from PIL import Image
 import numpy as np
-import torchvision.transforms as transforms
+import msadapter.torchvision.transforms as transforms
 
 from fewshot_data.common import utils
 

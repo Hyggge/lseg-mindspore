@@ -1,9 +1,9 @@
 r""" PASCAL-5i few-shot semantic segmentation dataset """
 import os
 
-from torch.utils.data import Dataset
-import torch.nn.functional as F
-import torch
+from msadapter.pytorch.utils.data import Dataset
+import msadapter.pytorch as torch.nn.functional as F
+import msadapter.pytorch as torch
 import PIL.Image as Image
 import numpy as np
 

@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 from PIL import Image
 
 import os
-import torch
+import msadapter.pytorch as torch
 
 import os
 import argparse
@@ -16,11 +16,11 @@ import numpy as np
 from tqdm import tqdm
 from collections import OrderedDict
 
-import torch
-import torch.nn.functional as F
-from torch.utils import data
-import torchvision.transforms as transform
-from torch.nn.parallel.scatter_gather import gather
+import msadapter.pytorch as torch
+import msadapter.pytorch as torch.nn.functional as F
+from msadapter.pytorch.utils import data
+import msadapter.pytorch as torchvision.transforms as transform
+from msadapter.pytorch.nn.parallel.scatter_gather import gather
 
 from additional_utils.models import LSeg_MultiEvalModule
 from modules.lseg_module import LSegModule
@@ -29,7 +29,7 @@ import cv2
 import math
 import types
 import functools
-import torchvision.transforms as torch_transforms
+import msadapter.pytorch as torchvision.transforms as torch_transforms
 import copy
 import itertools
 from PIL import Image
@@ -42,7 +42,7 @@ import matplotlib.figure as mplfigure
 import matplotlib.patches as mpatches
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from data import get_dataset
-import torchvision.transforms as transforms
+import msadapter.torchvision.transforms as transforms
 
 
 def get_new_pallete(num_cls):

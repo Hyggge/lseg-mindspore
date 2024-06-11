@@ -181,17 +181,17 @@ def forward_flex(self, x):
         x = self.patch_embed.backbone(x)
         if isinstance(x, (list, tuple)):
             x = x[-1]  # last feature if backbone outputs list/tuple of features
-    x = self.patch_embed.proj(x).flatten(2).transpose(1, 2)
+    x = self.patch_embed.proj(x).flatten(start_dim=2).transpose(1, 2)
 
     if getattr(self, "dist_token", None) is not None:
-        cls_tokens = self.cls_token.expand(
-            B, -1, -1
+        cls_tokens = self.cls_token.broadcast_to(
+            (B, -1, -1)
         )  # stole cls_tokens impl from Phil Wang, thanks
-        dist_token = self.dist_token.expand(B, -1, -1)
+        dist_token = self.dist_token.broadcast_to((B, -1, -1))
         x = torch.cat((cls_tokens, dist_token, x), dim=1)
     else:
-        cls_tokens = self.cls_token.expand(
-            B, -1, -1
+        cls_tokens = self.cls_token.broadcast_to(
+            (B, -1, -1)
         )  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_tokens, x), dim=1)
 

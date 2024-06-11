@@ -1,7 +1,7 @@
 r""" Helper functions """
 import random
 
-import torch
+import msadapter.pytorch as torch
 import numpy as np
 
 

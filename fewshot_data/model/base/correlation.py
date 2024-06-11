@@ -1,5 +1,5 @@
 r""" Provides functions that builds/manipulates correlation tensors """
-import torch
+import msadapter.pytorch as torch
 
 
 class Correlation:

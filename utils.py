@@ -4,7 +4,7 @@ import pathlib
 from glob import glob
 
 from argparse import ArgumentParser
-import torch
+import msadapter.pytorch as torch
 import pytorch_lightning as pl
 import numpy as np
 import cv2
