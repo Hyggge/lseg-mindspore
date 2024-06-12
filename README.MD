@@ -66,6 +66,8 @@ unzip ../datasets/ADEChallengeData2016.zip
 
 Note: for demo, if you want to use random inputs, you can ignore data loading and comment the code at [link](https://github.com/isl-org/lang-seg/blob/main/modules/lseg_module.py#L55). 
 
+Download OpenAI's PyTorch-CLIP Model from [PyTorch-CLIP](https://github.com/openai/CLIP) and convert it to MindSpore-CLIP Model refer to  [MindSpore-CLIP](https://github.com/XixinYang/CLIP-mindspore/blob/main/Mindspore-CLIP handbook.md). ([CKPTs used in this repo](https://bhpan.buaa.edu.cn/link/AA15887DBCFC0F477EB523F2CC7814D976))
+
 
 ### 🌻 Try demo now
 
