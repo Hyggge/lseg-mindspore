@@ -1,4 +1,4 @@
-import torch as pytorch_torch # Only use PyTorch for generating input for pytorch model
+# import torch as pytorch_torch # Only use PyTorch for generating input for pytorch model
 import msadapter.pytorch as torch
 import msadapter.pytorch.nn as nn
 # import timm
@@ -15,6 +15,9 @@ from mindspore import context, ops
 import traceback
 from vit_convert_py2ms.tokenizer import tokenize
 
+from modules.models.utils import transpose_custom
+
+from ms_clip.ms_clip import clip as ms_clip
 
 activations = {}
 
@@ -44,7 +47,9 @@ def get_attention(name):
             qkv[2],
         )  # make torchscript happy (cannot use tensor as tuple)
 
-        attn = (q @ k.transpose(-2, -1)) * module.scale
+
+        # attn = (q @ k.transpose(-2, -1)) * module.scale
+        attn = (q @ transpose_custom(k, -2, -1)) * module.scale
 
         attn = attn.softmax(dim=-1)  # [:,:,1,1:]
         attention[name] = attn
@@ -108,6 +113,7 @@ class Transpose(nn.Module):
 
     def forward(self, x):
         x = x.transpose(self.dim0, self.dim1)
+        # x = transpose_custom(x, self.dim0, self.dim1)
         return x
 
 
@@ -188,22 +194,31 @@ def forward_flex(self, x):
         if isinstance(x, (list, tuple)):
             x = x[-1]  # last feature if backbone outputs list/tuple of features
     # print(self.patch_embed.proj(x).flatten(start_dim=2).shape)
-    x = self.patch_embed.proj(x).flatten(start_dim=2)
+    # print("Debug")
+    # print(self.patch_embed.proj(x).shape)
+    x = self.patch_embed.proj(x)
     x = ops.squeeze(x, axis=0)
-    x = x.transpose(1, 2)
-    print(x.shape) # TODO: Fix transpose API
+    x = ops.flatten(x)
+    x = ops.expand_dims(x, 0)
+    # print(x.shape)
+    x = transpose_custom(x, 1, 2)
     if getattr(self, "dist_token", None) is not None:
         cls_tokens = self.cls_token.broadcast_to(
             (B, -1, -1)
         )  # stole cls_tokens impl from Phil Wang, thanks
         dist_token = self.dist_token.broadcast_to((B, -1, -1))
-        x = torch.cat((cls_tokens, dist_token, x), dim=1)
+        # print(x.shape)
+        # print(cls_tokens.shape)
+        # print(dist_token.shape)
+        x = ops.concat((cls_tokens, dist_token, x), 1)
     else:
         cls_tokens = self.cls_token.broadcast_to(
             (B, -1, -1)
         )  # stole cls_tokens impl from Phil Wang, thanks
-        x = torch.cat((cls_tokens, x), dim=1)
-    print(x.shape)
+        # print(x.shape)
+        # print(cls_tokens.shape)
+        x = ops.concat((cls_tokens, x), 1)
+    # print(x.shape)
     x = x + pos_embed
     x = self.pos_drop(x)
 
@@ -339,18 +354,23 @@ class MS_CLIP_TextEncoder(nn.Module):
         return mask
 
     def encode_text(self, text):
-        # Code from CLIP @ encode_text for text encoding
-        x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
+        # Code from CLIP @ encode_text for pytorch2mindspore convert
+        x = self.token_embedding(text)  # [batch_size, n_ctx, d_model]
 
-        x = x + self.positional_embedding.type(self.dtype)
+        x = x + self.positional_embedding
+        # print(x)
+        # print(x.shape)
         x = x.permute(1, 0, 2)  # NLD -> LND
         x = self.transformer(x)
         x = x.permute(1, 0, 2)  # LND -> NLD
-        x = self.ln_final(x).type(self.dtype)
+        x = self.ln_final(x)
 
         # x.shape = [batch_size, n_ctx, transformer.width]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection
+        # PyTorch API
+        # x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection
+        # MindSpore API
+        x = x[torch.arange(x.shape[0]), text.argmax(-1)] @ self.text_projection
 
         return x
 
@@ -383,11 +403,16 @@ def _make_pretrained_clip_vitl16_384(
     import os
     import shutil
     ################################################################## MS-CLIP
+    # ['CPU', 'GPU', 'Ascend', 'Davinci']
+    clip_pretrained, _ = ms_clip.load("ms_clip/ms_clip/ms_clip_model.ckpt", device='CPU')
+
     # import open_clip
     # OpenAI CLIP
-    clip_pretrained, _ = clip.load("ViT-B/32", device='cpu', jit=False)
+    # clip_pretrained, _ = clip.load("ViT-B/32", device='cpu')
 
     # OPenClip-for-MindSpore on Hugging Face
+    # os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
     # clip_pretrained, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
     # tokenizer = open_clip.get_tokenizer('ViT-B-32')
     
@@ -395,19 +420,19 @@ def _make_pretrained_clip_vitl16_384(
     # from mindformers import CLIPModel
     # clip_pretrained = CLIPModel.from_pretrained("clip_vit_b_32")
 
-    print("Initialize MindSpore-CLIP")
-    text_input = tokenize(["a diagram", "a dog", "a cat"]).to('cpu')
+    # print("Initialize MindSpore-CLIP")
+    # text_input = tokenize(["a diagram", "a dog", "a cat"]).to('cpu')
     # image_input = _(Image.open("./inputs/cat1.jpeg")).unsqueeze(0).to('cuda')
-    clip_input = msTensor(text_input)
-    ms_clip_path = "./clip-convert-py2ms"
-    if os.path.exists(ms_clip_path) and os.path.isdir(ms_clip_path):
-        shutil.rmtree(ms_clip_path)
-    clip_pretrained = MS_CLIP_TextEncoder(clip_pretrained)
+    # clip_input = msTensor(text_input)
+    # ms_clip_path = "./clip-convert-py2ms"
+    # if os.path.exists(ms_clip_path) and os.path.isdir(ms_clip_path):
+    #     shutil.rmtree(ms_clip_path)
+    # clip_pretrained = MS_CLIP_TextEncoder(clip_pretrained)
     # pytorch2mindspore(clip_pretrained, clip_input, output_dir=ms_clip_path)
     # print(clip_input)
 
-    print("Finish clip initialization")
-    ms_clip_output = clip_pretrained(clip_input)
+    # print("Finish clip initialization")
+    # ms_clip_output = clip_pretrained(clip_input)
     ################################################################## MS-CLIP
 
 
@@ -417,7 +442,7 @@ def _make_pretrained_clip_vitl16_384(
     # model = timm.create_model("vit_large_patch16_384", pretrained=pretrained)
     model = mindcv.create_model("vit_l_16_224", pretrained=pretrained) # Only 224 * 224 pretrained model finded
     
-    print("Load MindSpore-VIT")
+    # print("Load MindSpore-VIT")
 
 
     # Only use PyTorch for generating input for pytorch model

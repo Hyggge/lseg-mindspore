@@ -188,8 +188,8 @@ class LSeg(BaseModel):
         path_2 = self.scratch.refinenet2(path_3, layer_2_rn)
         path_1 = self.scratch.refinenet1(path_2, layer_1_rn)
 
-        text = text.to(x.device)
-        self.logit_scale = self.logit_scale.to(x.device)
+        # text = text.to(x.device)
+        # self.logit_scale = self.logit_scale.to(x.device)
         text_features = self.clip_pretrained.encode_text(text)
 
         image_features = self.scratch.head1(path_1)

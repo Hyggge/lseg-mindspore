@@ -4,6 +4,7 @@ import mindspore.nn as nn
 import msadapter.pytorch as torch
 import msadapter.torchvision.transforms as transforms
 
+from mindspore import context
 from modules.models.lseg_net import LSegNet
 from fcn import FCN8s
 from data import get_dataset
@@ -19,7 +20,7 @@ norm_mean= [0.5, 0.5, 0.5]
 norm_std = [0.5, 0.5, 0.5]
 up_args = {'mode': 'bilinear', 'align_corners': True}
 log_dir = ""
-
+context.set_context(pynative_synchronize=True)
 def create_log_dir():
     global log_dir
     current_time = datetime.now()
@@ -179,7 +180,7 @@ def train(model, dataloader, criterion, optimizer, epoch, accumulate_grad_batche
         # get input data
         img, target = batch
         target = Tensor(target, ms.int32)
-        print(img.shape)
+        # print(img.shape)
         # forward
         loss = train_step(img, target)
         loss = loss / accumulate_grad_batches
@@ -303,7 +304,7 @@ if __name__ == "__main__":
         args.weight_decay
     )
 
-    print(f"Optimizer is {optimizer}")
+    # print(f"Optimizer is {optimizer}")
 
     # get the metric
     metric = SegmentationMetric(nclass=len(labels))

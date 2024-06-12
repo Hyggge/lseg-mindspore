@@ -4,7 +4,7 @@ import types
 import msadapter.pytorch as torch
 import msadapter.pytorch.nn as nn
 import msadapter.pytorch.nn.functional as F
-
+from mindspore import Tensor as msTensor
 
 from .lseg_blocks import FeatureFusionBlock, Interpolate, _make_encoder, FeatureFusionBlock_custom, forward_vit
 # import clip
@@ -188,9 +188,11 @@ class LSeg(BaseModel):
         path_2 = self.scratch.refinenet2(path_3, layer_2_rn)
         path_1 = self.scratch.refinenet1(path_2, layer_1_rn)
 
-        text = text.to(x.device)
-        self.logit_scale = self.logit_scale.to(x.device)
-        text_features = self.clip_pretrained.encode_text(text)
+        # text = text.to(x.device)
+        # self.logit_scale = self.logit_scale.to(x.device)
+        # print(text)
+        # print(type(text))
+        text_features = self.clip_pretrained.encode_text(msTensor(text))
 
         image_features = self.scratch.head1(path_1)
 

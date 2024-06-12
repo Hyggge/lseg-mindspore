@@ -171,6 +171,10 @@ def tokenize(texts: Union[str, List[str]], context_length: int = 77) -> torch.Lo
     -------
     A two-dimensional tensor containing the resulting tokens, shape = [number of input strings, context_length]
     """
+
+    from ms_clip.ms_clip import clip as ms_clip
+    return ms_clip.tokenize(texts, context_length)
+
     if isinstance(texts, str):
         texts = [texts]
 
