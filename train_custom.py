@@ -6,7 +6,6 @@ import msadapter.torchvision.transforms as transforms
 
 from mindspore import context
 from modules.models.lseg_net import LSegNet
-from fcn import FCN8s
 from data import get_dataset
 from tqdm import tqdm
 from datetime import datetime
