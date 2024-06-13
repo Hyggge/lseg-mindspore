@@ -1,25 +1,23 @@
 import os
+import time
+import random
+import torch
 import torch.nn as nn
+import torch.cuda.amp as amp # add mixed precision
 import torchvision.transforms as transforms
+
 from argparse import ArgumentParser
-import pytorch_lightning as pl
 from options import Options
 from modules.lsegmentation_module import LSegmentationModule
 from modules.models.lseg_net import LSegNet
 from data import get_dataset
-import time
 from tqdm import tqdm
-import random
-import torch
-import torch.cuda.amp as amp # add mixed precision
-import pytorch_lightning as pl
 from datetime import datetime
 from argparse import ArgumentParser
 from data import get_dataset, get_available_datasets
 from encoding_custom.nn.loss import SegmentationLosses
 from encoding_custom.utils.metrics import SegmentationMetric
 from encoding_custom.utils.metrics import batch_pix_accuracy, batch_intersection_union
-import os
 
 norm_mean= [0.5, 0.5, 0.5]
 norm_std = [0.5, 0.5, 0.5]
