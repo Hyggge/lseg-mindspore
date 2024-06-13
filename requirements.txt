@@ -100,10 +100,10 @@ tensorboard-plugin-wit==1.8.0
 terminado==0.12.1
 testpath==0.5.0
 timm==0.4.12
-torch==1.9.1+cu111
-torchaudio==0.9.1
-torchmetrics==0.5.1
-torchvision==0.10.1+cu111
+mindspore==2.2.14
+msadapter==0.1.0
+mindcv==0.3.0
+mindconverter==1.7.0
 tornado==6.1
 tqdm==4.62.3
 traitlets==5.1.0
