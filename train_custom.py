@@ -183,7 +183,6 @@ def train(model, dataloader, criterion, optimizer, epoch, accumulate_grad_batche
         # print(img.shape)
         # forward
         loss = train_step(img, target)
-        loss = loss / accumulate_grad_batches
 
         sample_num += 1
         train_loss_total += loss.item()
