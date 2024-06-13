@@ -25,9 +25,9 @@ def create_log_dir():
     global log_dir
     current_time = datetime.now()
     log_dir = current_time.strftime("%Y%m%d_%H%M%S")
-    if not os.path.exists("./log"):
-        os.makedirs("./log")
-    log_dir = os.path.join("./log", log_dir)
+    if not os.path.exists("./logs"):
+        os.makedirs("./logs")
+    log_dir = os.path.join("./logs", log_dir)
     os.makedirs(log_dir)
 
 
