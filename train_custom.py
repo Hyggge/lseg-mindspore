@@ -15,12 +15,13 @@ from encoding_custom.nn.loss import SegmentationLosses
 from msadapter.pytorch.utils.data import DataLoader
 from encoding_custom.utils.metrics import SegmentationMetric
 from mindspore.common.tensor import Tensor
+from encoding_custom.nn.loss import SegmentationLosses
 
 norm_mean= [0.5, 0.5, 0.5]
 norm_std = [0.5, 0.5, 0.5]
 up_args = {'mode': 'bilinear', 'align_corners': True}
 log_dir = ""
-context.set_context(pynative_synchronize=True)
+
 def create_log_dir():
     global log_dir
     current_time = datetime.now()
@@ -146,14 +147,14 @@ def get_optimizer(model, base_lr, step_per_epoch, max_epochs, midasproto, weight
     if midasproto:
         print("Using midas optimization protocol")
         opt = nn.Adam(
-            params_list,
+            model.parameters(),
             learning_rate=DynamicDecayLR(base_lr, step_per_epoch, max_epochs),
             weight_decay=weight_decay,
         )
 
     else:
         opt = nn.Momentum(
-            params_list,
+            model.parameters(),
             learning_rate=DynamicDecayLR(base_lr, step_per_epoch, max_epochs),
             momentum=0.9,
             weight_decay=weight_decay,
@@ -271,10 +272,16 @@ if __name__ == "__main__":
     labels = get_labels(args.dataset)
 
     # get the criterion
-    criterion = nn.CrossEntropyLoss(ignore_index=255)
+    criterion = SegmentationLosses(
+        se_loss=args.se_loss, 
+        aux=args.aux, 
+        nclass=len(labels), 
+        se_weight=args.se_weight, 
+        aux_weight=args.aux_weight, 
+        ignore_index=args.ignore_index
+    )
 
     # get the model
-    # model = FCN8s(n_class=len(labels)) # only for test
     model = LSegNet(
         labels=labels,
         backbone=args.backbone,
@@ -287,14 +294,6 @@ if __name__ == "__main__":
     model.pretrained.model.patch_embed.img_size = (crop_size, crop_size)
 
     # get the optimizer and scheduler
-    # optimizer = nn.Adam(
-    #     model.trainable_params(),
-    #     learning_rate=DynamicDecayLR(
-    #         args.base_lr / 16 * args.batch_size,
-    #         len(train_dataloader) // (args.batch_size * args.accumulate_grad_batches),
-    #         args.max_epochs
-    #     ),
-    # ) # only for test
     optimizer = get_optimizer(
         model, 
         args.base_lr / 16 * args.batch_size,
@@ -309,6 +308,7 @@ if __name__ == "__main__":
     # get the metric
     metric = SegmentationMetric(nclass=len(labels))
 
+    ms.set_context(device_target='GPU')
     for epoch in range(args.max_epochs):
         # train
         train_result_epoch = train(model, train_dataloader, criterion, optimizer, epoch,  args.accumulate_grad_batches)
