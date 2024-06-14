@@ -22,17 +22,17 @@
 
 ![image-20240613233703057](./asserts/lseg.png)
 
-Lseg 由 3 个部分组成：Text Encoder、Image Encoder、Spatial  Regularization Block。
+LSeg 由 3 个部分组成：Text Encoder、Image Encoder、Spatial  Regularization Block。
 
 #### Text Encoder 和 Image Encoder
 
-Text Encoder 用于将 N 个文本标签嵌入到一个连续的向量空间 $\mathbb{R}^n$中，生成 N 个向量  $T1, ..., Tn \in \mathbb{R}^n$ 。和 Text Encoder 类似，Image Encoder 用于获得经过下采样的图像中每个像素的嵌入向量（为了节省内存），得到一个低分辨率的特征图。假设输入图像大小为 $H \times W$ ，s 是下采样比率，则得到的特征图为 $I \in \mathbb{R}^{\widetilde{H} \times \widetilde{W} \times C}$，其中 $\widetilde{H} = \frac{H}{s}, \widetilde{W} = \frac{W}{s}$。
+Text Encoder 用于将 N 个文本标签嵌入到一个连续的向量空间 $\mathbb{R}^n$中，生成 $N$ 个向量  $T_1,\cdots, T_n \in \mathbb{R}^n$ 。和 Text Encoder 类似，Image Encoder 用于获得经过下采样的图像中每个像素的嵌入向量（为了节省内存），得到一个低分辨率的特征图。假设输入图像大小为 $H \times W$ ， $s$ 是下采样比率，则得到的特征图为 $I \in \mathbb{R}^{\widetilde{H} \times \widetilde{W} \times C}$，其中 $\widetilde{H} = \frac{H}{s}, \widetilde{W} = \frac{W}{s}$。
 
-当得到文本标签和图像像素的嵌入后，可以计算每个像素嵌入和所有标签嵌入的内积，从而得到一个新的张量 $F \in \mathbb{R}^{\widetilde{H} \times \widetilde{W} \times N}$ 。其中，$F_{ijk}$ 表示坐标 $(i, j)$ 的像素和第k个标签的内积，即  $F_{ijk} = I_{ij} \cdot T_k$ 。在预测时，将与某个像素嵌入的内积最大的标签作为预测结果。因此，训练目标就是最大化像素嵌入和真实标签嵌入的内积，通过结合 softmax 和交叉熵损失函数即可实现。
+当得到文本标签和图像像素的嵌入后，可以计算每个像素嵌入和所有标签嵌入的内积，从而得到一个新的张量 $F \in \mathbb{R}^{\widetilde{H} \times \widetilde{W} \times N}$ 。其中， $F_{ijk}$  表示坐标 $(i, j)$ 的像素和第k个标签的内积，即  $F_{ijk} = I_{ij} \cdot T_k$ 。在预测时，将与某个像素嵌入的内积最大的标签作为预测结果。因此，训练目标就是最大化像素嵌入和真实标签嵌入的内积，通过结合 softmax 和交叉熵损失函数即可实现。
 
 #### Spatial  Regularization Block
 
-由于内存限制，图像编码器以较低的分辨率预测像素嵌入，因此得到的 “标签-像素”内积矩阵 $F \in \mathbb{R}^{\widetilde{H} \times \widetilde{W} \times N}$ 分辨率也比较低。在预测/训练时，需要得到分辨率和原图相同的分割结果。因此，需要先对 F 进行后处理，恢复分辨率，得到   $F' \in \mathbb{R}^{H \times W \times N}$ ，然后根据 $F'$ 为每个像素分配标签。Spatial  Regularization Block 就是进行后处理的模块。在  Spatial  Regularization Block 中，$F$ 先通过 Depthwise Block 或者 Bottlenect Block 进行变换，然后通过双线性插值进行上采样就得到了$F'$ 。
+由于内存限制，图像编码器以较低的分辨率预测像素嵌入，因此得到的 “标签-像素”内积矩阵 $F \in \mathbb{R}^{\widetilde{H} \times \widetilde{W} \times N}$ 分辨率也比较低。在预测/训练时，需要得到分辨率和原图相同的分割结果。因此，需要先对 $F$ 进行后处理，恢复分辨率，得到   $F' \in \mathbb{R}^{H \times W \times N}$ ，然后根据 $F'$ 为每个像素分配标签。Spatial  Regularization Block 就是进行后处理的模块。在  Spatial  Regularization Block 中， $F$ 先通过 Depthwise Block 或者 Bottlenect Block 进行变换，然后通过双线性插值进行上采样就得到了 $F'$  。
 
 Depthwise Block 和 Bottlenect Block 的结构如下所示。
 
@@ -62,7 +62,7 @@ Text Encoder 使用的是预训练的 CLIP 文本编码器，在训练时冻结�
 
 ### 实现思路
 
-Pytorch-Lightning 只是对 dataloader的创建、损失函数的创建、单步训练/验证的流程进行了封装，lseg 网络的构建使用的是仍然是原生 Pytorch。我们只需要参考官网"[How to Organize PyTorch Into Lightning](https://lightning.ai/docs/pytorch/stable/starter/converting.html#use-your-own-data)"，将这个过程 reverse，就可以得到原生Pytorch 版本的训练框架。具体流程如下
+Pytorch-Lightning 只是对 dataloader的创建、损失函数的创建、单步训练/验证的流程进行了封装，LSeg 网络的构建使用的是仍然是原生 Pytorch。我们只需要参考官网"[How to Organize PyTorch Into Lightning](https://lightning.ai/docs/pytorch/stable/starter/converting.html#use-your-own-data)"，对该过程进行逆向处理，就可以得到原生Pytorch 版本的训练框架。具体流程如下
 
 - Step1:  从 pytorch_lightning.LightningModule 模块中找到 dataloader 创建函数（train_dataloader和val_dataloader）、优化器创建函数（configure_optimizers），将其直接迁移过来，封装成新的函数 get_train_dataloader, get_val_dataloader, get_optimizer，便于后续使用。
 
